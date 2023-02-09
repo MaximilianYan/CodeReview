@@ -25,6 +25,7 @@ public:
 
     bool isCellFilled(int index) const;
     bool tryCell(int index, int tryNumber);
+    bool clearCell(int index);
 
     friend istream& operator>>(istream& in, Table& table);
     friend ostream& operator<<(ostream& out, Table& table);
@@ -54,26 +55,34 @@ private:
     static int getIndex(int i, int j);
 };
 
+bool out = false;
+
 bool solve(Table& table) {
     Table::CellRating patternRating;
-    patternRating.rate(table);
+    // patternRating.rate(table);
 
-    for (int k = 0; k < 81; ++k) {
-        int tryI = patternRating.getNum(k);
+    // Replace rating with simple enumeration
+
+    for (int tryI = 0; tryI < 81; ++tryI) {
+    // for (int k = 0; k < 81; ++k) {
+        // int tryI = patternRating.getNum(k);
         if (table.isCellFilled(tryI)) continue;
 
-        cout << "k=" << k << endl;
-        cout << "tryI=" << tryI << endl;
+        // cout << "k=" << k << endl;
+        // cout << "tryI=" << tryI << endl;
 
         for (int num = 1; num <= 9; ++num) {
             if (table.tryCell(tryI, num)) {
-                cout << "tried-------------------------------------------" << endl;
-                cout << table;
+                // cout << "tried-------------------------------------------" << endl;
+                // cout << "tryI=" << tryI << endl;
+                // cout << table;
 
                 if (solve(table))
                     return true;
             }
         }
+
+        table.clearCell(tryI);
 
         return false;
     }
@@ -180,7 +189,7 @@ bool Table::isCellFilled(int index) const {
 bool Table::tryCell(int index, int tryNumber) {
     if (tryNumber == 0)
         cout << "INCORRECT CODE" << endl;
-    if (data[index] != 0) {
+    if (data[index] == 0) {
         int i = index / 9;
         int j = index % 9;
         rowCap[i]++;
@@ -189,6 +198,20 @@ bool Table::tryCell(int index, int tryNumber) {
     }
 
     data[index] = tryNumber;
+
+    return isCorrect();
+}
+
+bool Table::clearCell(int index) {
+    if (data[index] != 0) {
+        int i = index / 9;
+        int j = index % 9;
+        rowCap[i]--;
+        colCap[j]--;
+        clasterCap[(i / 3) * 3 + j / 3]--;
+    }
+
+    data[index] = 0;
 
     return isCorrect();
 }
