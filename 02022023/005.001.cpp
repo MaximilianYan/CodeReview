@@ -59,23 +59,16 @@ bool out = false;
 
 bool solve(Table& table) {
     Table::CellRating patternRating;
-    // patternRating.rate(table);
+    patternRating.rate(table);
 
-    // Replace rating with simple enumeration
-
-    for (int tryI = 0; tryI < 81; ++tryI) {
-    // for (int k = 0; k < 81; ++k) {
-        // int tryI = patternRating.getNum(k);
+    // for (int tryI = 0; tryI < 81; ++tryI) {
+    for (int k = 0; k < 81; ++k) {
+        int tryI = patternRating.getNum(k);
         if (table.isCellFilled(tryI)) continue;
 
-        // cout << "k=" << k << endl;
-        // cout << "tryI=" << tryI << endl;
 
         for (int num = 1; num <= 9; ++num) {
             if (table.tryCell(tryI, num)) {
-                // cout << "tried-------------------------------------------" << endl;
-                // cout << "tryI=" << tryI << endl;
-                // cout << table;
 
                 if (solve(table))
                     return true;
