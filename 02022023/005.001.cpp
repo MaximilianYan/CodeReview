@@ -55,15 +55,31 @@ private:
     static int getIndex(int i, int j);
 };
 
-bool out = false;
+/*
+
+    Intelligent solution:
+
+    compl: counter:
+       0 : 1
+       1 : 38
+       2 : 8658
+       3 : 6053
+
+    Simplified solution:
+
+*/
+
+int counter = 0;
 
 bool solve(Table& table) {
+    ++counter;
+
     Table::CellRating patternRating;
     patternRating.rate(table);
 
-    // for (int tryI = 0; tryI < 81; ++tryI) {
-    for (int k = 0; k < 81; ++k) {
-        int tryI = patternRating.getNum(k);
+    for (int tryI = 0; tryI < 81; ++tryI) {
+    // for (int k = 0; k < 81; ++k) {
+        // int tryI = patternRating.getNum(k);
         if (table.isCellFilled(tryI)) continue;
 
 
@@ -83,17 +99,22 @@ bool solve(Table& table) {
     return true;
 }
 
+#ifndef NOMAIN
+
 int main() {
     Table pattern;
     cin >> pattern;
 
     if (solve(pattern))
-        cout << pattern << endl;
+        // cout << pattern << endl;
+        cout << endl;
     else
         cout << "Cannot solve" << endl;
 
-    // cout << pattern;
+    cout << "counter : " << counter << endl;
 }
+
+#endif // NOMAIN
 
 TableTempl::TableTempl(): isTable(false) {}
 TableTempl::TableTempl(bool t): isTable(t) {}
