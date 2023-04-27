@@ -74,6 +74,16 @@ void** Get(struct AVLTree* ptr, int key) {
     return nullptr;
 }
 
+struct Node* GetFIRSTLESSTHANKey(struct AVLTree* ptr, int key) {
+    struct Node* current = ptr->root_;
+    struct Node* prev = nullptr;
+    while (current != nullptr) {
+        prev = current;
+        current = current->key > key ? current->left : current->right;
+    }
+    return nullptr;
+}
+
 void Clear(struct AVLTree* ptr) {
     Clear2(ptr, ptr->root_);
     ptr->size_ = 0;
@@ -234,11 +244,36 @@ int main() {
     struct AVLTree tree;
     AVLTreeCtor(&tree);
 
-    for (int i = 0; i < 1000000; ++i) {
-        Insert(&tree, i, (void*)(size_t)i);
-    }
-    for (int i = 200000; i < 600000; ++i) {
-        Erase(&tree, i);
+    // for (int i = 0; i < 1000000; ++i) {
+    //     Insert(&tree, i, (void*)(size_t)i);
+    // }
+    // for (int i = 200000; i < 600000; ++i) {
+    //     Erase(&tree, i);
+    // }
+
+    int n = 0;
+    scanf("%d", &n);
+    char prec = '+';
+    int prei = 0;
+    while (n--) {
+        char c;
+        scanf("%c", &c);
+        int i;
+        scanf("%d", &i);
+
+        if (c == '+') {
+            if (prec == '?') {
+                Insert(&tree, (i + prei) % 1e9, (void*)(size_t)((i + prei) % 1e9));
+            } else { // prec == '+'
+                Insert(&tree, i, (void*)(size_t)i);
+            }
+        } else { // c == '?'
+            struct Node* ans = GetFIRSTLESSTHANKey(&tree, i);
+            printf("%d", ans == nullptr ? -1 : ans->key);
+        }
+
+        prec = c;
+        prei = i;
     }
 
 
