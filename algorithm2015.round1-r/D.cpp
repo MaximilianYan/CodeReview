@@ -196,25 +196,25 @@ int main() {
 
 
                 if (curBitL) {
+                    // инвертируя прижимаемся к нижней грани
+                    numNextCarry[0] = numCurCarry[0] + numCurNoCarry[0];
+                } else {
                     // не инвертируя прижимаемся к нижней грани
                     numNextNoCarry[0] = numCurNoCarry[0];
 
                     // инвертируя уходим от граней
                     numNextCarry[1] += numCurCarry[0] + numCurNoCarry[0];
-                } else {
-                    // инвертируя прижимаемся к нижней грани
-                    numNextCarry[0] = numCurCarry[0] + numCurNoCarry[0];
                 }
 
                 if (curBitR) {
+                    // инвертируя прижимаемся к верхней грани
+                    numNextCarry[2] = numCurNoCarry[2] + numCurNoCarry[2];
+
+                    // не инвертируя уходим от граней
+                    numNextNoCarry[1] += numCurNoCarry[2];
+                } else {
                     // не инвертируя прижимаемся к верхней грани
                     numNextNoCarry[2] = numCurNoCarry[2];
-
-                    // инвертируя уходим от граней
-                    numNextCarry[1] += numCurCarry[2] + numCurNoCarry[2];
-                } else {
-                    // инвертируя прижимаемся к верхней грани
-                    numNextCarry[2] = numCurCarry[2] + numCurNoCarry[2];
                 }
 
                 numNextCarry[1] += numCurCarry[1] + numCurNoCarry[1];
