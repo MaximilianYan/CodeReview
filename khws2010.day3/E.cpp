@@ -6,7 +6,7 @@
 
 using namespace std;
 
-#define LOCAL
+// #define LOCAL
 
 #define ERRMSG (cout << "ERR LINE " << __LINE__ << endl)
 
@@ -133,8 +133,8 @@ bool Point::operator>>(Point const& r) const {
 
 uint64_t Rectangle::size() const {
     return
-        ((*this)[0][1] - (*this)[0][0]) *
-        ((*this)[1][1] - (*this)[1][0]);
+        uint64_t((*this)[0][1] - (*this)[0][0]) *
+        uint64_t((*this)[1][1] - (*this)[1][0]);
 }
 
 
