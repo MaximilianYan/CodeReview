@@ -239,6 +239,7 @@ int main() {
 
 
     uint64_t answer = numCurNoCarry[0] + numCurNoCarry[1] + numCurNoCarry[2];
+    if (commonLR) answer = numCurNoCarryLR;
     cout << answer << endl;
 
     return 0;
