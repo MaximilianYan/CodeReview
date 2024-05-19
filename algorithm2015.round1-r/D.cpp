@@ -57,9 +57,6 @@ int main() {
 
     PositionMask pos; // текущая позиция в числе n
 
-    // bool fineL = true; // false, если один из старших битов уже сделал число строго больше границы
-    // bool fineR = true; // false, если один из старших битов уже сделал число строго меньше границы
-
     bool commonLR = true; // true, пока мы на общей части l и r
 
     uint64_t numCurCarryLR = 1;   // количество возможных решений,    требующих перенос в левый от текущего бит
@@ -72,9 +69,9 @@ int main() {
     uint64_t numCurNoCarry[3] = { 0, 0, 0 }; // количество возможных решений, не требующих перенос в левый от текущего бит
 
     for (pos = 63; !pos.isOverflowed(); --pos) {
-        uint64_t curBitN = n && pos.getMask(); // оставляем только рассматриваемый бит в n
-        uint64_t curBitL = l && pos.getMask(); // оставляем только рассматриваемый бит в l
-        uint64_t curBitR = r && pos.getMask(); // оставляем только рассматриваемый бит в r
+        uint64_t curBitN = n & pos.getMask(); // оставляем только рассматриваемый бит в n
+        uint64_t curBitL = l & pos.getMask(); // оставляем только рассматриваемый бит в l
+        uint64_t curBitR = r & pos.getMask(); // оставляем только рассматриваемый бит в r
 
         uint64_t numNextCarryLR = 0;   // количество возможных решений,    требующих перенос в текущий бит
         uint64_t numNextNoCarryLR = 0; // количество возможных решений, не требующих перенос в текущий бит
@@ -121,7 +118,7 @@ int main() {
 
             } else {
                 if (curBitL != 0) ERRMSG;
-                if (curBitR != 1) ERRMSG;
+                if (curBitR == 0) ERRMSG;
 
                 commonLR = false;
 
@@ -201,12 +198,12 @@ int main() {
                 if (curBitL) {
                     // не инвертируя прижимаемся к нижней грани
                     numNextNoCarry[0] = numCurNoCarry[0];
+
+                    // инвертируя уходим от граней
+                    numNextCarry[1] += numCurCarry[0] + numCurNoCarry[0];
                 } else {
                     // инвертируя прижимаемся к нижней грани
                     numNextCarry[0] = numCurCarry[0] + numCurNoCarry[0];
-
-                    // не инвертируя уходим от граней
-                    numNextNoCarry[1] += numCurNoCarry[0];
                 }
 
                 if (curBitR) {
@@ -244,48 +241,6 @@ int main() {
     uint64_t answer = numCurNoCarry[0] + numCurNoCarry[1] + numCurNoCarry[2];
     cout << answer << endl;
 
-    //                                         // l, r <= 1e18, поэтому не выйдет за последний бит
-    // int32_t majDiffPos = calcMajDiffPos(l, r); // позиция+1 старшего бита, в котором различаются l и r (0, если l == r)
-
-
-    // // изучаем, можно ли удовлетворить общему префиксу l и r и что для этого нужно
-    // bool canSetCommonPrefix = true;     // можно ли удовлетворить общему префиксу l и r
-    // bool mustStartCarryCascade = false; // нужно ли для этого заранее начинать каскад переносов налево
-    // uint64_t startCarryCascade = 0;     // если нужно, то с какой позиции
-    // {
-    //     PositionMask pos;   // текущая позиция в числе n
-    //     int32_t last1 = -1; // позиция последней встреченной в n 1-ы
-
-    //     for (pos = 0; pos.getPos() < majDiffPos; ++pos)
-    //         if (n && pos.getMask())
-    //             last1 = pos.getPos();
-
-    //     // pos.getPos() == majDiffPos
-
-
-    //     bool hasNew1 = false; // есть ли единицы левее общей границы
-
-    //     // pos.getPos() == majDiffPos
-    //     for (; !pos.isOverflowed(); ++pos) {
-
-
-    //         if (n && pos.getMask())
-    //             last1 = pos.getPos();
-    //             hasNew1 = true;
-    //         ;
-    //     }
-
-    // }
-
-    // uint64_t numOn = 0;  // количество чисел, которые можно получить, если в есть перенос в текущую позицию
-    // uint64_t numOff = 0; // количество чисел, которые можно получить, если в нет переноса в текущую позицию
-    // int32_t pos = 0;     // текущая позиция в числе n
-
-    // for (pos = 0; pos < 64; ++pos) {
-
-    // }
-
-
     return 0;
 }
 
@@ -304,7 +259,7 @@ void PositionMask::operator=(int32_t newPos) {
     if (newPos >= 64 || newPos < 0) ERRMSG;
 
     pos = newPos;
-    mask = 1 << newPos;
+    mask = uint64_t(1) << newPos;
     overflowed = false;
 }
 
