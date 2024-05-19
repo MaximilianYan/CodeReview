@@ -22,13 +22,13 @@ public:
     /// pos = 0, mask = 0..01 
     PositionMask();
 
-    /// only allows = 0 instruction (pos = 0, mask = 0..01) 
-    void operator=(int32_t zero);
+    void operator=(int32_t newPos);
 
     int32_t const& getPos();
     uint64_t const& getMask();
 
     void operator++();
+    void operator--();
 
     bool isOverflowed();
 
@@ -54,46 +54,236 @@ int main() {
     uint64_t n = 0, l = 0, r = 0;
     cin >> n >> l >> r;
 
-    //                                         // l, r <= 1e18, поэтому не выйдет за последний бит
-    int32_t majDiffPos = calcMajDiffPos(l, r); // позиция+1 старшего бита, в котором различаются l и r (0, если l == r)
+
+    PositionMask pos; // текущая позиция в числе n
+
+    // bool fineL = true; // false, если один из старших битов уже сделал число строго больше границы
+    // bool fineR = true; // false, если один из старших битов уже сделал число строго меньше границы
+
+    bool commonLR = true; // true, пока мы на общей части l и r
+
+    uint64_t numCurCarryLR = 1;   // количество возможных решений,    требующих перенос в левый от текущего бит
+    uint64_t numCurNoCarryLR = 1; // количество возможных решений, не требующих перенос в левый от текущего бит
+
+    //                                       // [0] - идущих по нижней грани
+    //                                       // [1] - идущих свободно между гранями
+    //                                       // [2] - идущих по верхней грани
+    uint64_t numCurCarry[3] = { 0, 0, 0 };   // количество возможных решений,    требующих перенос в левый от текущего бит
+    uint64_t numCurNoCarry[3] = { 0, 0, 0 }; // количество возможных решений, не требующих перенос в левый от текущего бит
+
+    for (pos = 63; !pos.isOverflowed(); --pos) {
+        uint64_t curBitN = n && pos.getMask(); // оставляем только рассматриваемый бит в n
+        uint64_t curBitL = l && pos.getMask(); // оставляем только рассматриваемый бит в l
+        uint64_t curBitR = r && pos.getMask(); // оставляем только рассматриваемый бит в r
+
+        uint64_t numNextCarryLR = 0;   // количество возможных решений,    требующих перенос в текущий бит
+        uint64_t numNextNoCarryLR = 0; // количество возможных решений, не требующих перенос в текущий бит
+
+        uint64_t numNextCarry[3] = { 0, 0, 0 };   // количество возможных решений,    требующих перенос в левый от текущего бит
+        uint64_t numNextNoCarry[3] = { 0, 0, 0 }; // количество возможных решений, не требующих перенос в левый от текущего бит
+
+        if (commonLR) {
+            if (curBitL == curBitR) {
+                if (curBitN == curBitL) {
+                    // нам не нужен перенос в текущий бит
+
+                    numNextCarryLR = 0;
+
+                    if (curBitN) {
+                        // можем запустить каскад переносов налево
+                        numNextNoCarryLR = numCurCarryLR + numCurNoCarryLR;
+                    } else {
+                        // не можем запустить каскад переносов налево
+                        numNextNoCarryLR = numCurNoCarryLR;
+                    }
 
 
-    // изучаем, можно ли удовлетворить общему префиксу l и r и что для этого нужно
-    bool canSetCommonPrefix = true;     // можно ли удовлетворить общему префиксу l и r
-    bool mustStartCarryCascade = false; // нужно ли для этого заранее начинать каскад переносов налево
-    uint64_t startCarryCascade = 0;     // если нужно, то с какой позиции
-    {
-        PositionMask pos;   // текущая позиция в числе n
-        int32_t last1 = -1; // позиция последней встреченной в n 1-ы
+                } else {
+                    // нам нужен перенос в текущий бит
 
-        for (pos = 0; pos.getPos() < majDiffPos; ++pos)
-            if (n && pos.getMask())
-                last1 = pos.getPos();
+                    numNextNoCarryLR = 0;
 
-        // pos.getPos() == majDiffPos
+                    if (curBitN) {
+                        // не можем остановить каскад переносов налево
+                        numNextCarryLR = numCurCarryLR;
+                    } else {
+                        // можем остановить каскад переносов налево
+                        numNextCarryLR = numCurCarryLR + numCurNoCarryLR;
+                    }
 
 
-        bool hasNew1 = false; // есть ли единицы левее общей границы
+                }
 
-        // pos.getPos() == majDiffPos
-        for (; !pos.isOverflowed(); ++pos) {
-            
-            
-            if (n && pos.getMask())
-                last1 = pos.getPos();
-                hasNew1 = true;
-            ;
+                numCurCarryLR = numNextCarryLR;
+                numCurNoCarryLR = numNextNoCarryLR;
+                continue;
+
+
+            } else {
+                if (curBitL != 0) ERRMSG;
+                if (curBitR != 1) ERRMSG;
+
+                commonLR = false;
+
+                if (curBitN) {
+                    // можем запустить каскад переносов налево
+                    // не можем остановить каскад переносов налево
+
+                    // инвертируя прижимаемся к нижней грани
+                    numNextCarry[0] = numCurCarryLR;
+
+                    // не инвертируя прижимаемся к верхней грани
+                    numNextNoCarry[2] = numCurCarryLR + numCurNoCarryLR;
+
+
+                } else {
+                    // не можем запустить каскад переносов налево
+                    // можем остановить каскад переносов налево
+
+                    // не инвертируя прижимаемся к нижней грани
+                    numNextNoCarry[0] = numCurNoCarryLR;
+
+                    // инвертируя прижимаемся к верхней грани
+                    numNextCarry[2] = numCurCarryLR + numCurNoCarryLR;
+                }
+
+
+                numCurCarry[0] = numNextCarry[0];
+                numCurCarry[1] = numNextCarry[1];
+                numCurCarry[2] = numNextCarry[2];
+                numCurNoCarry[0] = numNextNoCarry[0];
+                numCurNoCarry[1] = numNextNoCarry[1];
+                numCurNoCarry[2] = numNextNoCarry[2];
+                continue;
+
+
+            }
+        } else {
+            // commonLR == false
+
+
+            if (curBitN) {
+                // можем запустить каскад переносов налево
+                // не можем остановить каскад переносов налево
+
+                if (curBitL) {
+                    // не инвертируя прижимаемся к нижней грани
+                    numNextNoCarry[0] = numCurCarry[0] + numCurNoCarry[0];
+                } else {
+                    // инвертируя прижимаемся к нижней грани
+                    numNextCarry[0] = numCurCarry[0];
+
+                    // не инвертируя уходим от граней
+                    numNextNoCarry[1] += numCurCarry[0] + numCurNoCarry[0];
+                }
+
+                if (curBitR) {
+                    // не инвертируя прижимаемся к верхней грани
+                    numNextNoCarry[2] = numCurCarry[2] + numCurNoCarry[2];
+
+                    // инвертируя уходим от граней
+                    numNextCarry[1] += numCurCarry[2];
+                } else {
+                    // инвертируя прижимаемся к верхней грани
+                    numNextCarry[2] = numCurCarry[2];
+                }
+
+                numNextCarry[1] += numCurCarry[1];
+                numNextNoCarry[1] += numCurCarry[1] + numCurNoCarry[1];
+
+
+
+            } else {
+                // не можем запустить каскад переносов налево
+                // можем остановить каскад переносов налево
+
+
+                if (curBitL) {
+                    // не инвертируя прижимаемся к нижней грани
+                    numNextNoCarry[0] = numCurNoCarry[0];
+                } else {
+                    // инвертируя прижимаемся к нижней грани
+                    numNextCarry[0] = numCurCarry[0] + numCurNoCarry[0];
+
+                    // не инвертируя уходим от граней
+                    numNextNoCarry[1] += numCurNoCarry[0];
+                }
+
+                if (curBitR) {
+                    // не инвертируя прижимаемся к верхней грани
+                    numNextNoCarry[2] = numCurNoCarry[2];
+
+                    // инвертируя уходим от граней
+                    numNextCarry[1] += numCurCarry[2] + numCurNoCarry[2];
+                } else {
+                    // инвертируя прижимаемся к верхней грани
+                    numNextCarry[2] = numCurCarry[2] + numCurNoCarry[2];
+                }
+
+                numNextCarry[1] += numCurCarry[1] + numCurNoCarry[1];
+                numNextNoCarry[1] += numCurNoCarry[1];
+
+
+            }
+
+
+
+
+
+            numCurCarry[0] = numNextCarry[0];
+            numCurCarry[1] = numNextCarry[1];
+            numCurCarry[2] = numNextCarry[2];
+            numCurNoCarry[0] = numNextNoCarry[0];
+            numCurNoCarry[1] = numNextNoCarry[1];
+            numCurNoCarry[2] = numNextNoCarry[2];
+            continue;
         }
-
     }
 
-    uint64_t numOn = 0;  // количество чисел, которые можно получить, если в есть перенос в текущую позицию
-    uint64_t numOff = 0; // количество чисел, которые можно получить, если в нет переноса в текущую позицию
-    int32_t pos = 0;     // текущая позиция в числе n
 
-    for (pos = 0; pos < 64; ++pos) {
+    uint64_t answer = numCurNoCarry[0] + numCurNoCarry[1] + numCurNoCarry[2];
+    cout << answer << endl;
 
-    }
+    //                                         // l, r <= 1e18, поэтому не выйдет за последний бит
+    // int32_t majDiffPos = calcMajDiffPos(l, r); // позиция+1 старшего бита, в котором различаются l и r (0, если l == r)
+
+
+    // // изучаем, можно ли удовлетворить общему префиксу l и r и что для этого нужно
+    // bool canSetCommonPrefix = true;     // можно ли удовлетворить общему префиксу l и r
+    // bool mustStartCarryCascade = false; // нужно ли для этого заранее начинать каскад переносов налево
+    // uint64_t startCarryCascade = 0;     // если нужно, то с какой позиции
+    // {
+    //     PositionMask pos;   // текущая позиция в числе n
+    //     int32_t last1 = -1; // позиция последней встреченной в n 1-ы
+
+    //     for (pos = 0; pos.getPos() < majDiffPos; ++pos)
+    //         if (n && pos.getMask())
+    //             last1 = pos.getPos();
+
+    //     // pos.getPos() == majDiffPos
+
+
+    //     bool hasNew1 = false; // есть ли единицы левее общей границы
+
+    //     // pos.getPos() == majDiffPos
+    //     for (; !pos.isOverflowed(); ++pos) {
+
+
+    //         if (n && pos.getMask())
+    //             last1 = pos.getPos();
+    //             hasNew1 = true;
+    //         ;
+    //     }
+
+    // }
+
+    // uint64_t numOn = 0;  // количество чисел, которые можно получить, если в есть перенос в текущую позицию
+    // uint64_t numOff = 0; // количество чисел, которые можно получить, если в нет переноса в текущую позицию
+    // int32_t pos = 0;     // текущая позиция в числе n
+
+    // for (pos = 0; pos < 64; ++pos) {
+
+    // }
 
 
     return 0;
@@ -110,11 +300,11 @@ PositionMask::PositionMask() {
     *this = 0;
 }
 
-void PositionMask::operator=(int32_t zero) {
-    if (zero != 0) ERRMSG;
+void PositionMask::operator=(int32_t newPos) {
+    if (newPos >= 64 || newPos < 0) ERRMSG;
 
-    pos = 0;
-    mask = 1;
+    pos = newPos;
+    mask = 1 << newPos;
     overflowed = false;
 }
 
@@ -133,7 +323,16 @@ void PositionMask::operator++() {
     ++pos;
     mask <<= 1;
 
-    if (pos >= 65) overflowed = true;
+    if (pos >= 64) overflowed = true;
+}
+
+void PositionMask::operator--() {
+    checkOverflow();
+
+    --pos;
+    mask >>= 1;
+
+    if (pos < 0) overflowed = true;
 }
 
 bool PositionMask::isOverflowed() {
