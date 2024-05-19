@@ -85,10 +85,10 @@ int main() {
     });
 
     for (int32_t i = 0; i < rects.size(); ++i) {
-        for (int32_t j = i + 1; j < rects.size(); ++j) {
+        for (int32_t j = rects.size() - 1; j > i; --j) {
             if (rects[i] >> rects[j]) {
                 rects.erase(rects.begin() + j);
-                --j;
+                // --j;
             }
         }
     }
