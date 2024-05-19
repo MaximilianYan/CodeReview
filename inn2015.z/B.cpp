@@ -79,15 +79,41 @@ int main() {
     int32_t x, y, limitX, limitY;
     cin >> h >> x >> y >> limitX >> limitY;
 
-    int32_t xClusterNum = (x / limitX) + ((x % limitX) != 0);
-    int32_t yClusterNum = (y / limitY) + ((y % limitY) != 0);
+    if (x == 0) {
+        if (y == 0) yes();
+        else {
+            if (y > limitY) no();
+            else {
+                yes();
+                if (h) prY(y);
+            }
+        }
 
-    if (xClusterNum < yClusterNum)
-        out(x, y, limitX, limitY, xClusterNum, yClusterNum, prX, prY, h);
-    else if (xClusterNum > yClusterNum)
-        out(y, x, limitY, limitX, yClusterNum, xClusterNum, prY, prX, h);
-    else
-        outEq(y, x, limitY, limitX, yClusterNum, xClusterNum, prY, prX, h);
+    } else {
+        if (y == 0) {
+
+            if (x > limitX) no();
+            else {
+                yes();
+                if (h) prX(x);
+            }
+
+
+        } else {
+
+            int32_t xClusterNum = (x / limitX) + ((x % limitX) != 0);
+            int32_t yClusterNum = (y / limitY) + ((y % limitY) != 0);
+
+            if (xClusterNum < yClusterNum)
+                out(x, y, limitX, limitY, xClusterNum, yClusterNum, prX, prY, h);
+            else if (xClusterNum > yClusterNum)
+                out(y, x, limitY, limitX, yClusterNum, xClusterNum, prY, prX, h);
+            else
+                outEq(y, x, limitY, limitX, yClusterNum, xClusterNum, prY, prX, h);
+        }
+    }
+
+    cout << endl << endl;
 
     return 0;
 }
