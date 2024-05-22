@@ -330,10 +330,6 @@ bool operator==(const Line& lo, const Line& ro) {
         }
     }
     return false;
-    // if (lo.a == 0 || ro.a == 0) {
-    //     return (lo.a == ro.a) && (lo.c * ro.b == ro.c * lo.b);
-    // }
-    // return (lo.b * ro.a == ro.b * lo.a) && (lo.c * ro.a == ro.c * lo.a);
 }
 
 bool operator!=(const Line& lo, const Line& ro) {
@@ -369,13 +365,6 @@ bool operator%(const Line& lo, const Line& ro) {
         }
     }
     return false;
-    // if (lo == ro) {
-    //     return false;
-    // }
-    // if (lo.a == 0 || ro.a == 0) {
-    //     return (lo.a == ro.a);
-    // }
-    // return (lo.b * ro.a == ro.b * lo.a);
 }
 
 Vec2 operator^(const Line& lo, const Line& ro) {
@@ -409,29 +398,6 @@ Vec2 operator^(const Line& lo, const Line& ro) {
     }
 
     return Vec2(det_bc / det_ab, -det_ac / det_ab);
-
-    // if (lo.a == 0) {
-    //     Vec2 res(0, 0);
-    //     res[2] = -lo.c / lo.b;
-    //     res[1] = -(res[2] * ro.b + ro.c) / ro.a;
-
-    //     return res;
-    // }
-
-    // if (ro.a == 0) {
-    //     Vec2 res(0, 0);
-    //     res[2] = -ro.c / ro.b;
-    //     res[1] = -(res[2] * lo.b + lo.c) / lo.a;
-
-    //     return res;
-    // }
-
-
-    // Vec2 res(0, 0);
-    // res[2] = -(ro.a * lo.c - lo.a * ro.c) / (ro.a * lo.b - lo.a * ro.b);
-    // res[1] = -(ro.a * lo.b * res[2] + ro.a * lo.c) / (ro.a * lo.a);
-
-    // return res;
 }
 
 
